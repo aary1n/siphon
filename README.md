@@ -2,7 +2,7 @@
 
 **Version:** 0.1.0-dev (Phase 0.1: Core Physics Baseline)
 
-A rigorous, numerically-driven simulation framework for silicon photonic ring resonators, demonstrating the "Physics → Numerics → Yield" workflow for portfolio-quality engineering analysis.
+A rigorous, numerically-driven simulation framework for silicon photonic ring resonators, demonstrating the "Physics → Numerics → Yield" workflow for high quality engineering analysis.
 
 ---
 
