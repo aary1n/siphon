@@ -15,9 +15,8 @@ from pathlib import Path
 # Add siphon to path (for development without pip install)
 sys.path.insert(0, str(Path(__file__).parent.parent / 'python'))
 
-import numpy as np
 from siphon.ring import RingResonator, RingGeometry
-from siphon.thermal import ThermalModel, ThermalConfig
+from siphon.thermal import ThermalModel
 
 
 def print_header(title: str) -> None:
@@ -37,7 +36,7 @@ def main() -> None:
     print_header("1. Ring Resonator Definition")
 
     geometry = RingGeometry(
-        radius=10e-6,       # 10 μm
+        radius=10e-6,       # 10 um
         kappa=0.2,          # 20% power coupling
         alpha=2.0,          # 2 dB/cm loss
         n_eff=2.4,          # Effective index
@@ -47,7 +46,7 @@ def main() -> None:
     ring = RingResonator(geometry)
     print(f"\nDevice: {ring}")
     print(f"\nGeometry:")
-    print(f"  Circumference: {geometry.circumference * 1e6:.2f} μm")
+    print(f"  Circumference: {geometry.circumference * 1e6:.2f} um")
     print(f"  Self-coupling (r): {geometry.self_coupling:.4f}")
     print(f"  Round-trip loss (a): {geometry.round_trip_loss:.4f}")
 
@@ -73,11 +72,11 @@ def main() -> None:
     thermal_metrics = thermal.metrics(wavelength)
 
     print(f"\nThermo-optic Parameters:")
-    print(f"  dn/dT (silicon): {thermal.config.dn_dt:.2e} K⁻¹")
+    print(f"  dn/dT (silicon): {thermal.config.dn_dt:.2e} K^-1")
     print(f"  Thermal resistance: {thermal.config.thermal_resistance:.0f} K/W")
 
     print(f"\nWavelength Tuning:")
-    print(f"  Δλ/ΔT: {thermal_metrics.wavelength_shift_per_kelvin * 1e12:.2f} pm/K")
+    print(f"  d(lambda)/dT: {thermal_metrics.wavelength_shift_per_kelvin * 1e12:.2f} pm/K")
     print(f"  Tuning efficiency: {thermal_metrics.tuning_efficiency * 1e12:.1f} pm/mW")
 
     print(f"\nHeater Power Budget:")
@@ -88,8 +87,8 @@ def main() -> None:
     # Parameter sweep: radius vs FSR
     print_header("4. FSR vs. Radius (Parameter Sweep)")
 
-    radii = [5, 10, 20, 30, 50]  # μm
-    print(f"\n{'Radius (μm)':<12} {'FSR (nm)':<12} {'Q':<12} {'P/FSR (mW)':<12}")
+    radii = [5, 10, 20, 30, 50]  # um
+    print(f"\n{'Radius (um)':<12} {'FSR (nm)':<12} {'Q':<12} {'P/FSR (mW)':<12}")
     print("-" * 48)
 
     for R in radii:
@@ -107,7 +106,7 @@ def main() -> None:
     print_header("5. Literature Validation")
 
     # Expected values
-    fsr_expected = (8, 10)  # nm for R=10μm
+    fsr_expected = (8, 10)  # nm for R=10um
     dlambda_dT_expected = (0.06, 0.12)  # nm/K
 
     fsr_computed = metrics.fsr * 1e9
@@ -116,22 +115,22 @@ def main() -> None:
     fsr_pass = fsr_expected[0] <= fsr_computed <= fsr_expected[1]
     thermal_pass = dlambda_dT_expected[0] <= dlambda_dT_computed <= dlambda_dT_expected[1]
 
-    print(f"\nFSR (R=10μm):")
+    print(f"\nFSR (R=10um):")
     print(f"  Computed: {fsr_computed:.2f} nm")
     print(f"  Expected: {fsr_expected[0]}-{fsr_expected[1]} nm")
-    print(f"  Status: {'✓ PASS' if fsr_pass else '✗ FAIL'}")
+    print(f"  Status: {'[PASS]' if fsr_pass else '[FAIL]'}")
 
-    print(f"\nΔλ/ΔT (silicon @ 1550nm):")
+    print(f"\nd(lambda)/dT (silicon @ 1550nm):")
     print(f"  Computed: {dlambda_dT_computed:.3f} nm/K")
     print(f"  Expected: {dlambda_dT_expected[0]}-{dlambda_dT_expected[1]} nm/K")
-    print(f"  Status: {'✓ PASS' if thermal_pass else '✗ FAIL'}")
+    print(f"  Status: {'[PASS]' if thermal_pass else '[FAIL]'}")
 
     print_header("Summary")
     if fsr_pass and thermal_pass:
-        print("\n✓ All validation checks PASSED")
+        print("\n[PASS] All validation checks PASSED")
         print("  Phase 0.1 analytical baseline is ready for use.")
     else:
-        print("\n✗ Some validation checks FAILED")
+        print("\n[FAIL] Some validation checks FAILED")
         print("  Review model parameters and assumptions.")
 
     print("\nNext steps:")

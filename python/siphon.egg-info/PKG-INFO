@@ -1,0 +1,32 @@
+Metadata-Version: 2.4
+Name: siphon
+Version: 0.1.0.dev0
+Summary: Silicon Photonics with Open Numerics - Rigorous yield analysis for ring resonators
+Author: Aaryan Sharif
+License: MIT
+Project-URL: Repository, https://github.com/yourusername/siphon
+Project-URL: Documentation, https://github.com/yourusername/siphon#readme
+Keywords: photonics,silicon,ring resonator,simulation,yield
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Scientific/Engineering :: Physics
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: numpy>=1.24.0
+Requires-Dist: scipy>=1.10.0
+Requires-Dist: matplotlib>=3.7.0
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0.0; extra == "dev"
+Requires-Dist: pytest-cov>=4.0.0; extra == "dev"
+Requires-Dist: black>=23.0.0; extra == "dev"
+Requires-Dist: ruff>=0.1.0; extra == "dev"
+Requires-Dist: mypy>=1.0.0; extra == "dev"
+Provides-Extra: notebook
+Requires-Dist: jupyter>=1.0.0; extra == "notebook"
+Requires-Dist: jupyterlab>=4.0.0; extra == "notebook"
+Provides-Extra: all
+Requires-Dist: siphon[dev,notebook]; extra == "all"

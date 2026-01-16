@@ -440,6 +440,6 @@ class RingResonator:
     def __repr__(self) -> str:
         g = self.geometry
         return (
-            f"RingResonator(R={g.radius*1e6:.1f}μm, κ={g.kappa:.2f}, "
-            f"α={g.alpha:.1f}dB/cm, n_eff={g.n_eff:.2f}, n_g={g.n_g:.2f})"
+            f"RingResonator(R={g.radius*1e6:.1f}um, kappa={g.kappa:.2f}, "
+            f"alpha={g.alpha:.1f}dB/cm, n_eff={g.n_eff:.2f}, n_g={g.n_g:.2f})"
         )
