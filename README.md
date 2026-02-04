@@ -249,8 +249,6 @@ Key principles for SiPhON development:
 3. 🔁 **Reproducibility**: Lock versions, seed RNGs, save full parameter sets
 4. 🎯 **Correctness > speed**: Rigor before optimization
 
-See [CLAUDE.md](CLAUDE.md) for full development guidelines and MCP tooling protocols.
-
 ---
 
 **Last Updated:** 2026-01-16
