@@ -1,94 +1,35 @@
-# SiPhON - Silicon Photonics with Open Numerics
+# SiPhON
 
-**Version:** 0.1.0-dev (Phase 0.1: Core Physics Baseline)
+Silicon Photonics with Open Numerics - a simulation framework for silicon photonic ring resonators.
 
-A rigorous, numerically-driven simulation framework for silicon photonic ring resonators, demonstrating the "Physics → Numerics → Yield" workflow for high quality engineering analysis.
+## Overview
 
----
+SiPhON implements the analytical transfer function for all-pass ring resonators with thermal tuning, following the Physics → Numerics → Yield workflow. The current release (v0.1-dev) provides the core physics baseline; Monte Carlo yield analysis and FDE mode solving are planned for subsequent phases.
 
-## Project Status
-
-✅ **Phase 0.1 Complete**: Analytical baseline with all-pass ring transfer function and thermal tuning model
-
-🚧 **Phase 0.2 Next**: Variability engine and Monte Carlo yield analysis
-
----
-
-## Quick Start
-
-### Installation
+## Installation
 
 ```bash
-# Create and activate virtual environment
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1  # Windows PowerShell
-
-# Install SiPhON in development mode
+source .venv/bin/activate  # or .\.venv\Scripts\Activate.ps1 on Windows
 pip install -e ./python
+```
 
-# Install development dependencies (optional)
+For development (tests and notebooks):
+```bash
 pip install -e "./python[dev,notebook]"
 ```
 
-### Run Tests
+## Usage
 
-```bash
-cd python
-pytest tests/ -v
-```
-
-**Expected Result:** ✅ All 48 tests pass
-
-### Run Analytical Baseline Demo
-
-```bash
-python scripts/run_analytical.py
-```
-
-**Output includes:**
-- Ring resonator metrics (FSR, Q, ER, Finesse)
-- Thermal tuning parameters (wavelength shift, heater power budget)
-- Literature validation checks
-
-### Explore in Jupyter
-
-```bash
-jupyter notebook notebooks/01_analytical_baseline.ipynb
-```
-
-**Includes:**
-- Interactive transmission spectra
-- Parameter sweep studies (FSR vs. radius, Q vs. loss, ER vs. coupling)
-- Thermal tuning visualizations
-- Literature comparisons
-
----
-
-## What's Implemented (Phase 0.1)
-
-### 1. Analytical Ring Model (`siphon.ring`)
-
-**All-pass transfer function:**
-
-```
-T(φ) = (a² - 2ra·cos(φ) + r²) / (1 - 2ra·cos(φ) + (ra)²)
-```
-
-**Key metrics calculated:**
-- Free Spectral Range (FSR): λ² / (n_g · L)
-- Quality Factor (Q): λ / Δλ
-- Extinction Ratio (ER): T_max / T_min
-- Finesse (F): FSR / Δλ
-
-**Example:**
+### Ring resonator analysis
 
 ```python
 from siphon.ring import RingResonator, RingGeometry
 
 geom = RingGeometry(
     radius=10e-6,   # 10 μm
-    kappa=0.2,      # 20% coupling
-    alpha=2.0,      # 2 dB/cm loss
+    kappa=0.2,      # power coupling coefficient
+    alpha=2.0,      # propagation loss (dB/cm)
     n_eff=2.4,
     n_g=4.2
 )
@@ -100,17 +41,7 @@ print(f"FSR = {metrics.fsr * 1e9:.2f} nm")
 print(f"Q = {metrics.quality_factor:.0f}")
 ```
 
-### 2. Thermal Tuning Model (`siphon.thermal`)
-
-**Thermo-optic wavelength shift:**
-- dn/dT ≈ 1.8 × 10⁻⁴ K⁻¹ for silicon
-- Δλ/ΔT = (λ / n_g) × (dn_eff/dT) ≈ 0.06-0.10 nm/K
-
-**Heater power budget:**
-- P = ΔT / R_th
-- Calculates power required to tune by 1 FSR
-
-**Example:**
+### Thermal tuning
 
 ```python
 from siphon.thermal import ThermalModel
@@ -122,128 +53,65 @@ print(f"Wavelength shift: {metrics.wavelength_shift_per_kelvin * 1e12:.1f} pm/K"
 print(f"Power per FSR: {metrics.power_per_fsr * 1e3:.1f} mW")
 ```
 
-### 3. Comprehensive Test Suite
+### Running the demo
 
-**48 unit tests** covering:
-- Ring geometry validation
-- FSR analytical formula verification
-- Q vs. loss/coupling dependencies
-- Transmission spectrum bounds
-- Thermal model accuracy
-- Literature comparison
-
-**Run tests:**
 ```bash
-pytest python/tests/ -v
+python scripts/run_analytical.py
 ```
 
----
+### Notebooks
 
-## Architecture Principles
+The `notebooks/` directory contains interactive analyses. Start with `01_analytical_baseline.ipynb` for transmission spectra, parameter sweeps, and literature comparisons.
 
-1. **Performance-critical numerics in C++** (Phase 0.3+): Custom 2D FDE solver
-2. **Zero-copy Python bindings** (Phase 0.3+): `pybind11` for C++↔Python
-3. **Reproducibility first**: Version-locked dependencies, documented assumptions
-4. **Rigor over speed**: Validate convergence, quantify uncertainty
+## Physics
 
----
-
-## File Structure
+The all-pass ring transfer function is
 
 ```
-SIPHON/
-├── python/
-│   ├── siphon/
-│   │   ├── __init__.py
-│   │   ├── ring.py          # Analytical ring model
-│   │   └── thermal.py       # Thermal tuning model
-│   ├── tests/
-│   │   ├── test_ring.py     # Ring model tests (24 tests)
-│   │   └── test_thermal.py  # Thermal model tests (24 tests)
-│   └── pyproject.toml       # Package configuration
-├── notebooks/
-│   └── 01_analytical_baseline.ipynb  # Interactive analysis
-├── scripts/
-│   └── run_analytical.py    # Demo script
-├── ROADMAP.md               # Development roadmap
-├── TODO.md                  # Task tracking
-└── CLAUDE.md                # Project manifest & MCP protocols
+T(φ) = (a² - 2ra·cos(φ) + r²) / (1 - 2ra·cos(φ) + (ra)²)
 ```
 
----
+where `a` is the round-trip amplitude transmission, `r` is the self-coupling coefficient, and `φ` is the round-trip phase. Standard metrics (FSR, Q, extinction ratio, finesse) follow from this expression.
 
-## Validation Results
+Thermal tuning uses the thermo-optic coefficient of silicon (dn/dT ≈ 1.8 × 10⁻⁴ K⁻¹) to compute wavelength shift per kelvin and heater power budgets.
 
-### Literature Comparison
+## Validation
 
-| Metric | Computed (R=10μm) | Literature Range | Status |
-|--------|-------------------|------------------|--------|
-| FSR | 9.10 nm | 8-10 nm | ✅ PASS |
-| Q | 25,308 | 10,000-100,000 | ✅ PASS |
-| Δλ/ΔT | 0.060 nm/K | 0.06-0.12 nm/K | ✅ PASS |
+Computed values for a 10 μm radius ring at 1550 nm:
 
-### Test Coverage
+| Metric | Computed | Literature |
+|--------|----------|------------|
+| FSR | 9.10 nm | 8–10 nm |
+| Q | 25,308 | 10⁴–10⁵ |
+| Δλ/ΔT | 0.060 nm/K | 0.06–0.12 nm/K |
 
-- **Ring Model:** 24/24 tests pass
-- **Thermal Model:** 24/24 tests pass
-- **Total:** 48/48 tests pass ✅
+The test suite (48 tests) verifies analytical formulae, physical bounds, and literature agreement:
 
----
+```bash
+cd python && pytest tests/ -v
+```
 
-## Next Steps: Phase 0.2 - Variability & Yield
+## Project structure
 
-**Objectives:**
-1. Define fabrication tolerance distributions (σ_w, σ_h)
-2. Implement Monte Carlo sampling engine
-3. Map process variation → n_eff variation → heater power distribution
-4. Calculate yield metric: % devices tunable within power budget
+```
+python/siphon/       Core modules (ring.py, thermal.py)
+python/tests/        Unit tests
+notebooks/           Jupyter notebooks for interactive analysis
+scripts/             Command-line demos
+```
 
-**Deliverables:**
-- `siphon.yield` module with Monte Carlo engine
-- Sensitivity maps: ∂n_eff/∂w, ∂n_eff/∂h
-- Yield vs. tolerance curves
-- Notebook: `02_yield_analysis.ipynb`
+## Roadmap
 
----
-
-## Dependencies
-
-**Core:**
-- Python ≥ 3.11
-- NumPy ≥ 1.24
-- SciPy ≥ 1.10
-- Matplotlib ≥ 3.7
-
-**Development:**
-- pytest ≥ 7.0
-- jupyter ≥ 1.0
-
-**Future (Phase 0.3):**
-- CMake ≥ 3.20
-- Eigen ≥ 3.4
-- Spectra (eigenvalue solver)
-- pybind11
-
----
+Phase 0.1 (current): Analytical baseline with thermal tuning  
+Phase 0.2: Monte Carlo variability engine and yield analysis  
+Phase 0.3: 2D finite-difference eigenmode solver in C++ with pybind11 bindings
 
 ## References
 
-1. Bogaerts, W. et al., "Silicon microring resonators," *Laser Photon. Rev.* **6**, 47-73 (2012)
-2. Yariv, A., "Universal relations for coupling of optical power," *Electron. Lett.* **36**, 321-322 (2000)
-3. Cocorullo, G. et al., "Thermo-optic coefficient of silicon," *J. Appl. Phys.* **74**, 3271 (1993)
+W. Bogaerts et al., "Silicon microring resonators," Laser Photon. Rev. 6, 47–73 (2012)  
+A. Yariv, "Universal relations for coupling of optical power," Electron. Lett. 36, 321–322 (2000)  
+G. Cocorullo et al., "Thermo-optic coefficient of silicon," J. Appl. Phys. 74, 3271 (1993)
 
----
+## License
 
-## Contributing
-
-Key principles for SiPhON development:
-
-1.  **Verify numerics first**: Grid convergence, solver residuals, analytical limits
-2.  **Document assumptions**: What physics is included? What's neglected?
-3.  **Reproducibility**: Lock versions, seed RNGs, save full parameter sets
-4.  **Correctness > speed**: Rigor before optimization
-
----
-
-**Last Updated:** 2026-01-16
-**Architecture Version:** SiPhON v0.1-dev (Core Physics Baseline)
+MIT
