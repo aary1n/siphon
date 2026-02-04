@@ -234,20 +234,14 @@ SIPHON/
 
 ---
 
-## License
-
-(TBD - academic/open-source pending university IP review)
-
----
-
 ## Contributing
 
 Key principles for SiPhON development:
 
-1. ✅ **Verify numerics first**: Grid convergence, solver residuals, analytical limits
-2. 📝 **Document assumptions**: What physics is included? What's neglected?
-3. 🔁 **Reproducibility**: Lock versions, seed RNGs, save full parameter sets
-4. 🎯 **Correctness > speed**: Rigor before optimization
+1.  **Verify numerics first**: Grid convergence, solver residuals, analytical limits
+2.  **Document assumptions**: What physics is included? What's neglected?
+3.  **Reproducibility**: Lock versions, seed RNGs, save full parameter sets
+4.  **Correctness > speed**: Rigor before optimization
 
 ---
 
