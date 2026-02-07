@@ -2,3 +2,7 @@
 .env/
 venv/
 env/
+
+.claude
+CLAUDE.md
+PHASE_0.1_COMPLETE.md
