@@ -13,9 +13,16 @@ Theory:
     Step 2 (Horizontal): Solve the slab of width w with core n_slab(h), cladding n_SiO2.
         -> Yields the final effective index n_eff(w, h).
 
-    Each 1D slab solve finds the fundamental TE mode by solving the
+    Polarization bookkeeping for the quasi-TE strip mode (dominant Ex):
+        Step 1: Ex is parallel to the horizontal layer interfaces -> TE slab equation.
+        Step 2: Ex is perpendicular to the vertical effective-slab interfaces
+                -> TM slab equation. Using TE in both steps overestimates n_eff
+                by ~5-10% for standard SOI wires.
+
+    Each 1D slab solve finds the fundamental mode by solving the
     transcendental characteristic equation:
-        kx * tan(kx * d/2) = gamma
+        TE:  kx * tan(kx * d/2) = gamma
+        TM:  kx * tan(kx * d/2) = (n_core^2 / n_clad^2) * gamma
     where:
         kx = sqrt(k0^2 * n_core^2 - beta^2)      (transverse wavenumber in core)
         gamma = sqrt(beta^2 - k0^2 * n_clad^2)    (decay constant in cladding)
@@ -124,19 +131,21 @@ class SensitivityCoefficients:
     method: str = "effective_index_method"
 
 
-def slab_te_neff(
+def _slab_neff(
     thickness: float,
     wavelength: float,
     n_core: float,
     n_clad: float,
+    eta: float,
 ) -> float:
     """
-    Solve for the fundamental TE mode effective index of a symmetric slab waveguide.
+    Solve for the fundamental mode effective index of a symmetric slab waveguide.
 
     Finds beta such that the characteristic equation is satisfied:
-        kx * tan(kx * d/2) = gamma
+        kx * tan(kx * d/2) = eta * gamma
 
-    where kx and gamma are functions of beta (the propagation constant).
+    where eta = 1 for TE and eta = (n_core/n_clad)^2 for TM polarization,
+    and kx, gamma are functions of beta (the propagation constant).
 
     Parameters
     ----------
@@ -148,11 +157,13 @@ def slab_te_neff(
         Core refractive index.
     n_clad : float
         Cladding refractive index.
+    eta : float
+        Polarization factor multiplying gamma in the characteristic equation.
 
     Returns
     -------
     n_eff : float
-        Effective index of the fundamental TE mode.
+        Effective index of the fundamental mode.
 
     Raises
     ------
@@ -176,8 +187,8 @@ def slab_te_neff(
         )
 
     # Search for n_eff in (n_clad, n_core)
-    # The characteristic equation for symmetric TE slab:
-    #   f(n_eff) = kx * tan(kx * d/2) - gamma = 0
+    # The characteristic equation for a symmetric slab:
+    #   f(n_eff) = kx * tan(kx * d/2) - eta * gamma = 0
     # where:
     #   kx = sqrt(k0^2 * n_core^2 - beta^2)
     #   gamma = sqrt(beta^2 - k0^2 * n_clad^2)
@@ -194,7 +205,7 @@ def slab_te_neff(
         kx = np.sqrt(kx_sq)
         gamma = np.sqrt(gamma_sq)
 
-        return kx * np.tan(kx * d / 2) - gamma
+        return kx * np.tan(kx * d / 2) - eta * gamma
 
     # Bracket: n_eff is between n_clad and n_core
     # Use a small offset from boundaries to avoid singularities
@@ -229,6 +240,68 @@ def slab_te_neff(
     return n_eff_solution
 
 
+def slab_te_neff(
+    thickness: float,
+    wavelength: float,
+    n_core: float,
+    n_clad: float,
+) -> float:
+    """
+    Fundamental TE mode effective index of a symmetric slab waveguide.
+
+    Solves kx * tan(kx * d/2) = gamma (electric field parallel to the
+    slab interfaces).
+
+    Parameters
+    ----------
+    thickness : float
+        Slab thickness [m].
+    wavelength : float
+        Operating wavelength [m].
+    n_core : float
+        Core refractive index.
+    n_clad : float
+        Cladding refractive index.
+
+    Returns
+    -------
+    n_eff : float
+        Effective index of the fundamental TE mode.
+    """
+    return _slab_neff(thickness, wavelength, n_core, n_clad, eta=1.0)
+
+
+def slab_tm_neff(
+    thickness: float,
+    wavelength: float,
+    n_core: float,
+    n_clad: float,
+) -> float:
+    """
+    Fundamental TM mode effective index of a symmetric slab waveguide.
+
+    Solves kx * tan(kx * d/2) = (n_core/n_clad)^2 * gamma (electric field
+    perpendicular to the slab interfaces).
+
+    Parameters
+    ----------
+    thickness : float
+        Slab thickness [m].
+    wavelength : float
+        Operating wavelength [m].
+    n_core : float
+        Core refractive index.
+    n_clad : float
+        Cladding refractive index.
+
+    Returns
+    -------
+    n_eff : float
+        Effective index of the fundamental TM mode.
+    """
+    return _slab_neff(thickness, wavelength, n_core, n_clad, eta=(n_core / n_clad) ** 2)
+
+
 def check_single_mode(
     width: float,
     height: float,
@@ -261,19 +334,29 @@ def check_single_mode(
 
     Notes
     -----
-    This is an approximate check. For a symmetric slab, higher-order modes
-    appear when V > pi/2. We check both dimensions independently (EIM-like).
+    This is an approximate check, consistent with the EIM decomposition:
+    the vertical direction uses the full core-cladding NA, while the
+    horizontal direction uses the step-1 slab index n_slab(h) as its core
+    (the lateral confinement a TE1 mode would actually see).
+
+    The V < pi threshold (rather than the strict symmetric-slab TE1 cutoff
+    at V = pi/2) compensates for the EIM's overestimated lateral
+    confinement; it places the TE1 cutoff at w = lambda / NA_eff ~ 645nm
+    for 220nm SOI at 1550nm, consistent with full-vector results.
     """
     k0 = 2 * np.pi / wavelength
-    NA = np.sqrt(n_core**2 - n_clad**2)
 
-    V_width = k0 * width / 2 * NA
-    V_height = k0 * height / 2 * NA
+    # Vertical: full core-cladding contrast
+    NA_vertical = np.sqrt(n_core**2 - n_clad**2)
+    V_height = k0 * height / 2 * NA_vertical
 
-    # Fundamental mode only: V < pi/2 in at least one dimension,
-    # or both below the second-mode cutoff threshold.
-    # For a symmetric slab, the TE1 mode cutoff is at V = pi/2.
-    return V_width < np.pi and V_height < np.pi
+    # Horizontal: contrast seen by the lateral mode is set by the
+    # vertical-slab effective index, not the bulk core index
+    n_slab = slab_te_neff(height, wavelength, n_core, n_clad)
+    NA_horizontal = np.sqrt(n_slab**2 - n_clad**2)
+    V_width = k0 * width / 2 * NA_horizontal
+
+    return bool(V_width < np.pi and V_height < np.pi)
 
 
 class EffectiveIndexSolver:
@@ -290,9 +373,11 @@ class EffectiveIndexSolver:
 
     Notes
     -----
-    The EIM decomposition for TE-like modes:
+    The EIM decomposition for TE-like modes (dominant Ex):
     - Step 1: TE slab in the vertical direction (thickness = height)
-    - Step 2: TE slab in the horizontal direction (width, using n_slab from step 1)
+    - Step 2: TM slab in the horizontal direction (width, using n_slab from
+      step 1), because Ex is perpendicular to the vertical effective-slab
+      interfaces.
 
     Accuracy: ~1-5% on n_eff vs. full 2D FDE solver for typical SOI geometries.
     Sensitivity accuracy: ~10-20% (sufficient for Phase 0.2 yield estimates).
@@ -313,8 +398,8 @@ class EffectiveIndexSolver:
         """
         Compute effective index via two-step EIM.
 
-        Step 1: Solve vertical slab (thickness=h, core=n_Si, clad=n_SiO2) -> n_slab
-        Step 2: Solve horizontal slab (thickness=w, core=n_slab, clad=n_SiO2) -> n_eff
+        Step 1: Solve vertical TE slab (thickness=h, core=n_Si, clad=n_SiO2) -> n_slab
+        Step 2: Solve horizontal TM slab (thickness=w, core=n_slab, clad=n_SiO2) -> n_eff
 
         Parameters
         ----------
@@ -334,11 +419,12 @@ class EffectiveIndexSolver:
         n_core = self.waveguide.n_core
         n_clad = self.waveguide.n_clad
 
-        # Step 1: Vertical slab (TE mode)
+        # Step 1: Vertical slab (TE polarization: Ex parallel to interfaces)
         n_slab = slab_te_neff(h, wl, n_core, n_clad)
 
         # Step 2: Horizontal slab using n_slab as effective core index
-        n_eff_result = slab_te_neff(w, wl, n_slab, n_clad)
+        # (TM polarization: Ex perpendicular to the vertical interfaces)
+        n_eff_result = slab_tm_neff(w, wl, n_slab, n_clad)
 
         return n_eff_result
 

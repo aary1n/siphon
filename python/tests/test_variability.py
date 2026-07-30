@@ -374,8 +374,9 @@ class TestPhysicalReasonableness:
     def test_mean_power_reasonable(self) -> None:
         """Mean heater power should be in mW range for typical tolerances."""
         result = quick_yield(n_samples=10_000, seed=42)
-        # Mean power should be in 0.1-50 mW range
-        assert 0.1e-3 < result.mean_heater_power < 50e-3, (
+        # Sanity envelope: the worst-case power model (P = |dlambda| / efficiency,
+        # documented overestimate) with sigma_w=10nm gives means of tens of mW.
+        assert 0.1e-3 < result.mean_heater_power < 100e-3, (
             f"Mean power {result.mean_heater_power*1e3:.2f}mW outside range"
         )
 
