@@ -32,9 +32,9 @@
 
 ### Analytical Ring Model (P0)
 
-* [ ] Implement analytical all-pass transfer function (`siphon.ring`).
-* [ ] Parameterise geometry: Radius (), coupling (), loss ().
-* [ ] Extract Key Metrics:
+* [x] Implement analytical all-pass transfer function (`siphon.ring`).
+* [x] Parameterise geometry: Radius (), coupling (), loss ().
+* [x] Extract Key Metrics:
 * Extinction Ratio (ER).
 * Linewidth () & Quality Factor ().
 * Free Spectral Range (FSR).
@@ -43,9 +43,9 @@
 
 ### Thermal Constraints (P0)
 
-* [ ] Model thermo-optic effect in Silicon ().
-* [ ] Calculate resonance drift ().
-* [ ] Define **Heater Power Budget**: Power required to shift resonance by 1 FSR.
+* [x] Model thermo-optic effect in Silicon ().
+* [x] Calculate resonance drift ().
+* [x] Define **Heater Power Budget**: Power required to shift resonance by 1 FSR.
 
 ---
 
@@ -53,20 +53,20 @@
 
 ### Process Variation (P0)
 
-* [ ] Define fabrication tolerance priors:
+* [x] Define fabrication tolerance priors:
 * Waveguide Width:  (e.g., 10nm).
 * Silicon Thickness:  (e.g., 5nm).
 
 
-* [ ] Map  (using analytical approximation first).
+* [x] Map  (using analytical approximation first).
 
 ### Yield Definition (P0)
 
-* [ ] **Metric Upgrade:** Shift from "Wavelength Hit" to **"Thermal Overhead."**
+* [x] **Metric Upgrade:** Shift from "Wavelength Hit" to **"Thermal Overhead."**
 * *Yield = % of devices that can be tuned to target wavelength without exceeding max heater power.*
 
 
-* [ ] Implement vectorized Monte Carlo sampler (avoid raw Python loops).
+* [x] Implement vectorized Monte Carlo sampler (avoid raw Python loops).
 
 ---
 
