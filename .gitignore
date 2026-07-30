@@ -1,8 +1,21 @@
+# Virtual environments
 .venv/
 .env/
 venv/
 env/
 
+# Python caches and build artifacts
+__pycache__/
+*.pyc
+*.pyd
+*.so
+*.egg-info/
+.pytest_cache/
+
+# C++ / CMake build tree
+build/
+
+# Local tooling
 .claude
 CLAUDE.md
 PHASE_0.1_COMPLETE.md

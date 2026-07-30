@@ -15,4 +15,19 @@ from siphon.thermal import ThermalModel
 from siphon.sensitivity import EffectiveIndexSolver
 from siphon.variability import YieldAnalyzer
 
-__all__ = ["RingResonator", "ThermalModel", "EffectiveIndexSolver", "YieldAnalyzer"]
+# C++ FDE mode solver (optional: requires the CMake-built extension)
+try:
+    from siphon import solver  # noqa: F401
+    HAS_SOLVER = True
+except ImportError:
+    solver = None
+    HAS_SOLVER = False
+
+__all__ = [
+    "RingResonator",
+    "ThermalModel",
+    "EffectiveIndexSolver",
+    "YieldAnalyzer",
+    "solver",
+    "HAS_SOLVER",
+]
