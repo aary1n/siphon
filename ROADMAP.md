@@ -74,21 +74,21 @@
 
 ### Numerical Core (P0)
 
-* [ ] Setup C++17 CMake project structure.
-* [ ] Implement 2D Scalar Helmholtz discretization (5-point stencil).
-* [ ] **Matrix Assembly:** Construct `Eigen::SparseMatrix` for arbitrary  grids.
-* [ ] **Solver:** Implement Shift-and-Invert Arnoldi (via `Spectra` or ARPACK) to find only the fundamental mode.
+* [x] Setup C++17 CMake project structure.
+* [x] Implement 2D Scalar Helmholtz discretization (5-point stencil).
+* [x] **Matrix Assembly:** Construct `Eigen::SparseMatrix` for arbitrary  grids.
+* [x] **Solver:** Implement Shift-and-Invert Arnoldi (via `Spectra` or ARPACK) to find only the fundamental mode.
 
 ### Python Bindings (P0)
 
-* [ ] Integrate `pybind11` to expose the `Solver` class to Python.
-* [ ] Implement `numpy`  `Eigen` memory mapping (pass geometry grids without copy).
-* [ ] Return `ModeProfile` and `n_eff` directly as Python objects.
+* [x] Integrate `pybind11` to expose the `Solver` class to Python.
+* [x] Implement `numpy`  `Eigen` memory mapping (pass geometry grids without copy).
+* [x] Return `ModeProfile` and `n_eff` directly as Python objects.
 
 ### Validation (P0)
 
-* [ ] Grid convergence study (convergence rate vs. ).
-* [ ] Benchmarking: Compare execution time (Pure Python vs. C++ bind).
+* [x] Grid convergence study (convergence rate vs. ). Richardson orders 2.013/2.003; slab vs analytical 0.58%.
+* [x] Benchmarking: Compare execution time (Pure Python vs. C++ bind). 1.1-1.4x vs scipy ARPACK (both dominated by compiled sparse factorization); <1s per 256^2-scale solve.
 
 ---
 
